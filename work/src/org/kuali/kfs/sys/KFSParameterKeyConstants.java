@@ -31,7 +31,7 @@ public class KFSParameterKeyConstants {
         public static final String YEAR_END_AUTO_DISAPPROVE_DOCUMENT_TYPES = "YEAR_END_AUTO_DISAPPROVE_DOCUMENT_TYPES";
         public static final String YEAR_END_AUTO_DISAPPROVE_PARENT_DOCUMENT_TYPE = "YEAR_END_AUTO_DISAPPROVE_PARENT_DOCUMENT_TYPE";
     }
-    
+
     public static class FpParameterConstants {
     	public static final String FP_ALLOWED_BUDGET_BALANCE_TYPES = "ALLOWED_BUDGET_BALANCE_TYPES";
     }
@@ -50,6 +50,13 @@ public class KFSParameterKeyConstants {
         public static final String PLANT_INDEBTEDNESS_OFFSET_CODE = "PLANT_INDEBTEDNESS_OFFSET_CODE";
         public static final String CAPITALIZATION_OFFSET_CODE = "CAPITALIZATION_OFFSET_CODE";
         public static final String LIABILITY_OFFSET_CODE = "LIABILITY_OFFSET_CODE";
+        public static final String EXPENSE_OBJECT_TYPE_PARAM = "EXPENSE_OBJECT_TYPE";
+        public static final String INCOME_OBJECT_TYPE_PARAM = "INCOME_OBJECT_TYPE";
+        public static final String CASH_BUDGET_RECORD_LEVEL_PARM = "CASH_BUDGET_RECORD_LEVEL";
+        public static final String FUND_BALANCE_OBJECT_CODE_PARAM = "FUND_BALANCE_OBJECT_CODE";
+        public static final String CURRENT_ASSET_OBJECT_CODE_PARAM = "CURRENT_ASSET_OBJECT_CODE";
+        public static final String CURRENT_LIABILITY_OBJECT_CODE_PARAM = "CURRENT_LIABILITY_OBJECT_CODE";
+        public static final String ENCUMBRANCE_BALANCE_TYPE_PARAM = "ENCUMBRANCE_BALANCE_TYPE";
     }
 
     public static class LdParameterConstants {
