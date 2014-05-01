@@ -31,6 +31,7 @@ import org.kuali.kfs.coa.service.AccountingPeriodService;
 import org.kuali.kfs.gl.GeneralLedgerConstants;
 import org.kuali.kfs.gl.batch.BatchSortUtil;
 import org.kuali.kfs.gl.batch.DemergerSortComparator;
+import org.kuali.kfs.gl.batch.ScrubberStep;
 import org.kuali.kfs.gl.batch.service.RunDateService;
 import org.kuali.kfs.gl.businessobject.OriginEntryFull;
 import org.kuali.kfs.gl.businessobject.OriginEntryTestBase;
@@ -41,6 +42,8 @@ import org.kuali.kfs.sys.businessobject.OriginationCode;
 import org.kuali.kfs.sys.context.SpringContext;
 import org.kuali.kfs.sys.context.TestUtils;
 import org.kuali.rice.core.api.mo.common.active.MutableInactivatable;
+import org.kuali.rice.coreservice.api.parameter.Parameter;
+import org.kuali.rice.coreservice.framework.parameter.ParameterService;
 import org.kuali.rice.krad.bo.PersistableBusinessObject;
 import org.kuali.rice.krad.service.BusinessObjectService;
 
@@ -58,6 +61,7 @@ public class ScrubberServiceTest extends OriginEntryTestBase {
 
     protected ScrubberService scrubberService = null;
     protected BusinessObjectService businessObjectService;
+    protected ParameterService parameterService;
 
     @Override
     protected void setUp() throws Exception {
@@ -67,6 +71,8 @@ public class ScrubberServiceTest extends OriginEntryTestBase {
 
         scrubberService = SpringContext.getBean(ScrubberService.class);
         businessObjectService = SpringContext.getBean(BusinessObjectService.class);
+        parameterService = SpringContext.getBean(ParameterService.class);
+
 
         // Get the test date time service so we can specify the date/time of the run
         Calendar c = Calendar.getInstance();
@@ -1511,6 +1517,54 @@ public class ScrubberServiceTest extends OriginEntryTestBase {
 
                 new EntryHolder(GeneralLedgerConstants.BatchFileSystem.SCRUBBER_ERROR_SORTED_FILE, inputTransactions[0]),
                 new EntryHolder(GeneralLedgerConstants.BatchFileSystem.SCRUBBER_ERROR_SORTED_FILE, testingYear + "BL1031400-----9892---EXFB07DI  LGINVALOBTY     00000GENERATED OFFSET                        +00000000000000043.42C" + testingYear + "-01-05          ----------                                       ")
+                };
+
+        scrub(inputTransactions);
+        assertOriginEntries(7, outputTransactions);
+    }
+
+    /**
+     * Tests that the scrubber updates object type from CA_OBJECT_CODE_T table entry
+     * for scrubbed transaction whose origin code is not specified in parameter
+     * OBJECT_TYPE_BYPASS_ORIGINATIONS
+     * @throws Exception thrown if any exception is encountered for any reason
+     */
+    public void testObjectTypeUpdate() throws Exception {
+        String[] inputTransactions = {
+                testingYear + "BL1031400-----4100---FBXX07DI  LGINVALOBTY     00000Rite Quality Office Supplies Inc.                       43.42D" + testingYear + "-01-05          ----------                                                                               ",
+                testingYear + "BL1031400-----9892---EXFB07DI  LGINVALOBTY     00000Rite Quality Office Supplies Inc.                       43.42C" + testingYear + "-01-05          ----------                                                                               " };
+
+        EntryHolder[] outputTransactions = {
+                new EntryHolder(GeneralLedgerConstants.BatchFileSystem.SCRUBBER_INPUT_FILE, inputTransactions[0]),
+                new EntryHolder(GeneralLedgerConstants.BatchFileSystem.SCRUBBER_INPUT_FILE, inputTransactions[1]),
+                new EntryHolder(GeneralLedgerConstants.BatchFileSystem.SCRUBBER_VALID_OUTPUT_FILE, testingYear + "BL1031400-----4100---FBFB07DI  LGINVALOBTY     00000Rite Quality Office Supplies Inc.       +00000000000000043.42D" + testingYear + "-01-05          ----------                                       "),
+                new EntryHolder(GeneralLedgerConstants.BatchFileSystem.SCRUBBER_VALID_OUTPUT_FILE, testingYear + "BL1031400-----9892---EXFB07DI  LGINVALOBTY     00000Rite Quality Office Supplies Inc.       +00000000000000043.42C" + testingYear + "-01-05          ----------                                       "),
+                };
+        scrub(inputTransactions);
+        assertOriginEntries(1, outputTransactions);
+    }
+
+    /**
+     * Tests that the scrubber does not update object type for origin code
+     * specified in parameter OBJECT_TYPE_BYPASS_ORIGINATIONS
+     * @throws Exception thrown if any exception is encountered for any reason
+     */
+    public void testObjectTypeBypassOriginations() throws Exception {
+        // create a bypass origin for testing
+        Parameter.Builder param = Parameter.Builder.create(parameterService.getParameter(ScrubberStep.class, GeneralLedgerConstants.GlScrubberGroupRules.OBJECT_TYPE_BYPASS_ORIGINATIONS));
+        param.setValue("LG");
+        parameterService.updateParameter(param.build());
+
+        String[] inputTransactions = {
+                testingYear + "BL1031400-----4100---FBXX07DI  LGINVALOBTY     00000Rite Quality Office Supplies Inc.                       43.42D" + testingYear + "-01-05          ----------                                                                               ",
+                testingYear + "BL1031400-----9892---EXFB07DI  01INVALOBTY     00000Rite Quality Office Supplies Inc.                       43.42C" + testingYear + "-01-05          ----------                                                                               " };
+
+        EntryHolder[] outputTransactions = {
+                new EntryHolder(GeneralLedgerConstants.BatchFileSystem.SCRUBBER_INPUT_FILE, inputTransactions[0]),
+                new EntryHolder(GeneralLedgerConstants.BatchFileSystem.SCRUBBER_INPUT_FILE, inputTransactions[1]),
+
+                new EntryHolder(GeneralLedgerConstants.BatchFileSystem.SCRUBBER_VALID_OUTPUT_FILE, testingYear + "BL1031400-----4100---EXFB07DI  LGINVALOBTY     00000Rite Quality Office Supplies Inc.       +00000000000000043.42D" + testingYear + "-01-05          ----------                                       "),
+                new EntryHolder(GeneralLedgerConstants.BatchFileSystem.SCRUBBER_VALID_OUTPUT_FILE, testingYear + "BL1031400-----9892---EXFB07DI  LGINVALOBTY     00000Rite Quality Office Supplies Inc.       +00000000000000043.42C" + testingYear + "-01-05          ----------                                       "),
                 };
 
         scrub(inputTransactions);
