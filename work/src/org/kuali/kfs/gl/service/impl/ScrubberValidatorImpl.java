@@ -178,6 +178,7 @@ public class ScrubberValidatorImpl implements ScrubberValidator {
             errors.add(new Message("** INVALID CHARACTER EDITED", Message.TYPE_WARNING));
         }
 
+
         // It's important that this check come before the checks for object, sub-object and accountingPeriod
         // because this validation method will set the fiscal year and reload those three objects if the fiscal
         // year was invalid. This will also set originEntry.getOption and workingEntry.getOption. So, it's
@@ -799,19 +800,6 @@ public class ScrubberValidatorImpl implements ScrubberValidator {
             return MessageBuilder.buildMessage(KFSKeyConstants.ERROR_OBJECT_CODE_NOT_ACTIVE, objectCodeString, Message.TYPE_FATAL);
         }
 
-        // KFSCNTRB-784
-        Set<String> objectTypeBypassOriginationCodes = new HashSet<String>(parameterService.getParameterValuesAsString(ScrubberStep.class, GeneralLedgerConstants.GlScrubberGroupRules.OBJECT_TYPE_BYPASS_ORIGINATIONS));
-
-        // if this is not a bypassed origination code then copy the object type code pulled from
-        // from the database into our working entry
-        if (!objectTypeBypassOriginationCodes.contains(originEntry.getFinancialSystemOriginationCode())) {
-            // place an if here in case we want to log these updates at some point
-            if (!workingEntryFinancialObject.getFinancialObjectTypeCode().equals(workingEntry.getFinancialObjectTypeCode())) {
-                workingEntry.setFinancialObjectTypeCode(workingEntryFinancialObject.getFinancialObjectTypeCode());
-            }
-        }
-
-
         //TODO:- need to commented back after using file --> ??
         // changed OriginEntryInformation to OriginEntryFull in  ScrubberProcess line 537 (after getting entry from file)
         //((OriginEntryFull)workingEntry).setFinancialObject(workingEntryFinancialObject);
@@ -832,16 +820,20 @@ public class ScrubberValidatorImpl implements ScrubberValidator {
     protected Message validateObjectType(OriginEntryInformation originEntry, OriginEntryInformation workingEntry, AccountingCycleCachingService accountingCycleCachingService) {
         LOG.debug("validateObjectType() started");
 
-        if (!StringUtils.hasText(originEntry.getFinancialObjectTypeCode())) {
-            // If not specified, use the object type from the object code
-            ObjectCode workingEntryFinancialObject = accountingCycleCachingService.getObjectCode(workingEntry.getUniversityFiscalYear(), workingEntry.getChartOfAccountsCode(), workingEntry.getFinancialObjectCode());
+        // grab bypass origin codes from parameters
+        Set<String> objectTypeBypassOriginationCodes = new HashSet<String>(parameterService.getParameterValuesAsString(ScrubberStep.class, GeneralLedgerConstants.GlScrubberGroupRules.OBJECT_TYPE_BYPASS_ORIGINATIONS));
+
+        // if this is not a bypassed origination code then insert appropriate object type code for incoming transaction based
+        // on the object code - want to do this before validation checks
+        if (!objectTypeBypassOriginationCodes.contains(originEntry.getFinancialSystemOriginationCode())) {
+            ObjectCode workingEntryFinancialObject = accountingCycleCachingService.getObjectCode(originEntry.getUniversityFiscalYear(), originEntry.getChartOfAccountsCode(), originEntry.getFinancialObjectCode());
             workingEntry.setFinancialObjectTypeCode(workingEntryFinancialObject.getFinancialObjectTypeCode());
-        }
-        else {
+        } else {
             workingEntry.setFinancialObjectTypeCode(originEntry.getFinancialObjectTypeCode());
         }
 
         ObjectType workingEntryObjectType = accountingCycleCachingService.getObjectType(workingEntry.getFinancialObjectTypeCode());
+
         if (workingEntryObjectType == null) {
             return MessageBuilder.buildMessage(KFSKeyConstants.ERROR_OBJECT_TYPE_NOT_FOUND, originEntry.getFinancialObjectTypeCode(), Message.TYPE_FATAL);
         }

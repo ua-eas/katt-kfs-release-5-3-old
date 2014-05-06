@@ -42,7 +42,10 @@ import org.kuali.kfs.sys.businessobject.OriginationCode;
 import org.kuali.kfs.sys.context.SpringContext;
 import org.kuali.kfs.sys.context.TestUtils;
 import org.kuali.rice.core.api.mo.common.active.MutableInactivatable;
+import org.kuali.rice.coreservice.api.parameter.EvaluationOperator;
 import org.kuali.rice.coreservice.api.parameter.Parameter;
+import org.kuali.rice.coreservice.api.parameter.Parameter.Builder;
+import org.kuali.rice.coreservice.api.parameter.ParameterType;
 import org.kuali.rice.coreservice.framework.parameter.ParameterService;
 import org.kuali.rice.krad.bo.PersistableBusinessObject;
 import org.kuali.rice.krad.service.BusinessObjectService;
@@ -1167,6 +1170,10 @@ public class ScrubberServiceTest extends OriginEntryTestBase {
      * @throws Exception thrown if any exception is encountered for any reason
      */
     public void testInvalidEncumbranceUpdateCode() throws Exception {
+        // ensure we do not automatically set ObjectType by temporarily adding
+        // origin to bypass parameter
+        String originalParamValue = setObjectTypeBypassOriginForTest("EU");
+
         final int testingYearAsInt = Integer.parseInt(testingYear);
         final String previousTestingYear = new Integer(testingYearAsInt - 1).toString();
 
@@ -1178,6 +1185,9 @@ public class ScrubberServiceTest extends OriginEntryTestBase {
 
         scrub(inputTransactions);
         assertOriginEntries(7, outputTransactions);
+
+        // reset parameter to original value
+        resetObjectTypeBypassOriginToOriginalValue(originalParamValue);
     }
 
     /**
@@ -1499,6 +1509,10 @@ public class ScrubberServiceTest extends OriginEntryTestBase {
      * @throws Exception thrown if any exception is encountered for any reason
      */
     public void testInvalidObjectType() throws Exception {
+        // ensure we do not automatically set ObjectType by temporarily adding
+        // origin to bypass parameter
+        String originalParamValue = setObjectTypeBypassOriginForTest("LG");
+
         String[] inputTransactions = {
                 testingYear + "BL1031400-----4100---EXXX07DI  LGINVALOBTY     00000Rite Quality Office Supplies Inc.                       43.42D" + testingYear + "-01-05          ----------                                                                               ",
                 testingYear + "BL1031400-----9892---EXFB07DI  LGINVALOBTY     00000Rite Quality Office Supplies Inc.                       43.42C" + testingYear + "-01-05          ----------                                                                               " };
@@ -1521,6 +1535,9 @@ public class ScrubberServiceTest extends OriginEntryTestBase {
 
         scrub(inputTransactions);
         assertOriginEntries(7, outputTransactions);
+
+        // reset parameter back to original value
+        resetObjectTypeBypassOriginToOriginalValue(originalParamValue);
     }
 
     /**
@@ -1530,18 +1547,65 @@ public class ScrubberServiceTest extends OriginEntryTestBase {
      * @throws Exception thrown if any exception is encountered for any reason
      */
     public void testObjectTypeUpdate() throws Exception {
+        // object type "XX" and in the input transactions - EXXX07DI and EXXX07DI shoud be updated to
+        // should be EXEX07DI and EXFB07DI after scrub
         String[] inputTransactions = {
-                testingYear + "BL1031400-----4100---FBXX07DI  LGINVALOBTY     00000Rite Quality Office Supplies Inc.                       43.42D" + testingYear + "-01-05          ----------                                                                               ",
-                testingYear + "BL1031400-----9892---EXFB07DI  LGINVALOBTY     00000Rite Quality Office Supplies Inc.                       43.42C" + testingYear + "-01-05          ----------                                                                               " };
+                testingYear + "BL1031400-----4100---EXXX07DI  LGINVALOBTY     00000Rite Quality Office Supplies Inc.                       43.42D" + testingYear + "-01-05          ----------                                                                               ",
+                testingYear + "BL1031400-----9892---EXXX07DI  LGINVALOBTY     00000Rite Quality Office Supplies Inc.                       43.42C" + testingYear + "-01-05          ----------                                                                               " };
 
         EntryHolder[] outputTransactions = {
                 new EntryHolder(GeneralLedgerConstants.BatchFileSystem.SCRUBBER_INPUT_FILE, inputTransactions[0]),
                 new EntryHolder(GeneralLedgerConstants.BatchFileSystem.SCRUBBER_INPUT_FILE, inputTransactions[1]),
-                new EntryHolder(GeneralLedgerConstants.BatchFileSystem.SCRUBBER_VALID_OUTPUT_FILE, testingYear + "BL1031400-----4100---FBFB07DI  LGINVALOBTY     00000Rite Quality Office Supplies Inc.       +00000000000000043.42D" + testingYear + "-01-05          ----------                                       "),
+                new EntryHolder(GeneralLedgerConstants.BatchFileSystem.SCRUBBER_VALID_OUTPUT_FILE, testingYear + "BL1031400-----4100---EXEX07DI  LGINVALOBTY     00000Rite Quality Office Supplies Inc.       +00000000000000043.42D" + testingYear + "-01-05          ----------                                       "),
                 new EntryHolder(GeneralLedgerConstants.BatchFileSystem.SCRUBBER_VALID_OUTPUT_FILE, testingYear + "BL1031400-----9892---EXFB07DI  LGINVALOBTY     00000Rite Quality Office Supplies Inc.       +00000000000000043.42C" + testingYear + "-01-05          ----------                                       "),
-                };
+                new EntryHolder(GeneralLedgerConstants.BatchFileSystem.DEMERGER_VAILD_OUTPUT_FILE, testingYear + "BL1031400-----4100---EXEX07DI  LGINVALOBTY     00000Rite Quality Office Supplies Inc.       +00000000000000043.42D" + testingYear + "-01-05          ----------                                       "),
+                new EntryHolder(GeneralLedgerConstants.BatchFileSystem.DEMERGER_VAILD_OUTPUT_FILE, testingYear + "BL1031400-----9892---EXFB07DI  LGINVALOBTY     00000Rite Quality Office Supplies Inc.       +00000000000000043.42C" + testingYear + "-01-05          ----------                                       ")
+        };
+
         scrub(inputTransactions);
-        assertOriginEntries(1, outputTransactions);
+        this.assertOriginEntries(7, outputTransactions);
+    }
+
+    /**
+     * forces a an entry into the OBJECT_TYPE_BYPASS_ORIGINATIONS parameter
+     *
+     * @param origin
+     * @return the original value for .OBJECT_TYPE_BYPASS_ORIGINATIONS parameter
+     */
+    private String setObjectTypeBypassOriginForTest(String origin) {
+        String retval = "";
+
+        // create/set bypass origin parameter for testing
+        if (!parameterService.parameterExists(ScrubberStep.class, GeneralLedgerConstants.GlScrubberGroupRules.OBJECT_TYPE_BYPASS_ORIGINATIONS)) {
+            Parameter.Builder pbuilder = Builder.create("KFS", "KFS-GL", "ScrubberStep",
+                GeneralLedgerConstants.GlScrubberGroupRules.OBJECT_TYPE_BYPASS_ORIGINATIONS,
+                ParameterType.Builder.create("CONFG"));
+            pbuilder.setValue(origin);
+            pbuilder.setEvaluationOperator(EvaluationOperator.ALLOW);
+            pbuilder.setDescription("test");
+            parameterService.createParameter(pbuilder.build());
+        } else {
+            Parameter param = parameterService.getParameter(ScrubberStep.class, GeneralLedgerConstants.GlScrubberGroupRules.OBJECT_TYPE_BYPASS_ORIGINATIONS);
+            retval = param.getValue();
+            Parameter.Builder pbuilder = Parameter.Builder.create(param);
+            pbuilder.setValue(origin);
+            parameterService.updateParameter(pbuilder.build());
+        }
+
+        return retval;
+    }
+
+    /**
+     * resets OBJECT_TYPE_BYPASS_ORIGINATIONS parameter to oringinalValue
+     *
+     * @param originalValue
+     */
+    private void resetObjectTypeBypassOriginToOriginalValue(String originalValue) {
+        // set parameter back to original value
+        Parameter param = parameterService.getParameter(ScrubberStep.class, GeneralLedgerConstants.GlScrubberGroupRules.OBJECT_TYPE_BYPASS_ORIGINATIONS);
+        Parameter.Builder pbuilder = Parameter.Builder.create(param);
+        pbuilder.setValue(originalValue);
+        parameterService.updateParameter(pbuilder.build());
     }
 
     /**
@@ -1550,25 +1614,35 @@ public class ScrubberServiceTest extends OriginEntryTestBase {
      * @throws Exception thrown if any exception is encountered for any reason
      */
     public void testObjectTypeBypassOriginations() throws Exception {
-        // create a bypass origin for testing
-        Parameter.Builder param = Parameter.Builder.create(parameterService.getParameter(ScrubberStep.class, GeneralLedgerConstants.GlScrubberGroupRules.OBJECT_TYPE_BYPASS_ORIGINATIONS));
-        param.setValue("LG");
-        parameterService.updateParameter(param.build());
+        // ensure we do not automatically set ObjectType by temporarily adding
+        // origin to bypass parameter
+        String originalParamValue = setObjectTypeBypassOriginForTest("LG");
 
+        // the 2 entries below both have the incorrect object type. The 1st entry with origin "LG" is setup to
+        // bypass the auto-populate object type code so it should cause errors. The 2nd entry should have the incorrect
+        // object type "XX" automatically updated to "FB" and succeed
         String[] inputTransactions = {
-                testingYear + "BL1031400-----4100---FBXX07DI  LGINVALOBTY     00000Rite Quality Office Supplies Inc.                       43.42D" + testingYear + "-01-05          ----------                                                                               ",
-                testingYear + "BL1031400-----9892---EXFB07DI  01INVALOBTY     00000Rite Quality Office Supplies Inc.                       43.42C" + testingYear + "-01-05          ----------                                                                               " };
+                testingYear + "BL1031400-----4100---EXXX07DI  LGINVALOBTY     00000Rite Quality Office Supplies Inc.                       43.42D" + testingYear + "-01-05          ----------                                                                               ",
+                testingYear + "BL1031400-----9892---EXXX07DI  01INVALOBTY     00000Rite Quality Office Supplies Inc.                       43.42C" + testingYear + "-01-05          ----------                                                                               " };
 
         EntryHolder[] outputTransactions = {
                 new EntryHolder(GeneralLedgerConstants.BatchFileSystem.SCRUBBER_INPUT_FILE, inputTransactions[0]),
                 new EntryHolder(GeneralLedgerConstants.BatchFileSystem.SCRUBBER_INPUT_FILE, inputTransactions[1]),
+                new EntryHolder(GeneralLedgerConstants.BatchFileSystem.SCRUBBER_ERROR_OUTPUT_FILE, testingYear + "BL1031400-----4100---EXXX07DI  LGINVALOBTY     00000Rite Quality Office Supplies Inc.                       43.42D" + testingYear + "-01-05          ----------                                       "),
+                new EntryHolder(GeneralLedgerConstants.BatchFileSystem.SCRUBBER_ERROR_OUTPUT_FILE, testingYear + "BL1031400-----9892---EXFB07DI  01INVALOBTY     00000GENERATED OFFSET                        +00000000000000043.42C" + testingYear + "-01-05          ----------                                       "),
+                new EntryHolder(GeneralLedgerConstants.BatchFileSystem.DEMERGER_ERROR_OUTPUT_FILE, testingYear + "BL1031400-----4100---EXXX07DI  LGINVALOBTY     00000Rite Quality Office Supplies Inc.                       43.42D" + testingYear + "-01-05          ----------                                       "),
+                new EntryHolder(GeneralLedgerConstants.BatchFileSystem.DEMERGER_ERROR_OUTPUT_FILE, testingYear + "BL1031400-----9892---EXFB07DI  01INVALOBTY     00000Rite Quality Office Supplies Inc.       +00000000000000043.42C" + testingYear + "-01-05          ----------                                       "),
+                new EntryHolder(GeneralLedgerConstants.BatchFileSystem.SCRUBBER_VALID_OUTPUT_FILE, testingYear + "BL1031400-----9892---EXFB07DI  01INVALOBTY     00000Rite Quality Office Supplies Inc.       +00000000000000043.42C" + testingYear + "-01-05          ----------                                       "),
+                new EntryHolder(GeneralLedgerConstants.BatchFileSystem.SCRUBBER_ERROR_SORTED_FILE, testingYear + "BL1031400-----4100---EXXX07DI  LGINVALOBTY     00000Rite Quality Office Supplies Inc.                       43.42D" + testingYear + "-01-05          ----------                                       "),
+                new EntryHolder(GeneralLedgerConstants.BatchFileSystem.SCRUBBER_ERROR_SORTED_FILE, testingYear + "BL1031400-----9892---EXFB07DI  01INVALOBTY     00000GENERATED OFFSET                        +00000000000000043.42C" + testingYear + "-01-05          ----------                                       ")
 
-                new EntryHolder(GeneralLedgerConstants.BatchFileSystem.SCRUBBER_VALID_OUTPUT_FILE, testingYear + "BL1031400-----4100---EXFB07DI  LGINVALOBTY     00000Rite Quality Office Supplies Inc.       +00000000000000043.42D" + testingYear + "-01-05          ----------                                       "),
-                new EntryHolder(GeneralLedgerConstants.BatchFileSystem.SCRUBBER_VALID_OUTPUT_FILE, testingYear + "BL1031400-----9892---EXFB07DI  LGINVALOBTY     00000Rite Quality Office Supplies Inc.       +00000000000000043.42C" + testingYear + "-01-05          ----------                                       "),
-                };
+        };
 
         scrub(inputTransactions);
         assertOriginEntries(7, outputTransactions);
+
+        // reset parameter back to original value
+        resetObjectTypeBypassOriginToOriginalValue(originalParamValue);
     }
 
     /**
@@ -1918,6 +1992,9 @@ public class ScrubberServiceTest extends OriginEntryTestBase {
      * @throws Exception thrown if any exception is encountered for any reason
      */
     public void testNoIndebtednessForObjectSubTypeP1() throws Exception {
+        // ensure we do not automatically set ObjectType by temporarily adding
+        // origin to bypass parameter
+        String originalParamValue = setObjectTypeBypassOriginForTest("PL");
 
         String[] input = new String[] { testingYear + "BL2231423-----9100---ACIN  CR  PLNODEBTP1      00000FRICKA FRACKA                                        45995.84C" + testingYear + "-01-05          ----------                                                                       ",
                 testingYear + "BL2231423-----8000---ACAS  CR  PLNODEBTP1      00000TP Generated Offset                                  45995.84D" + testingYear + "-01-05          ----------                                                                       " };
@@ -1933,6 +2010,9 @@ public class ScrubberServiceTest extends OriginEntryTestBase {
 
         scrub(input);
         assertOriginEntries(7, output);
+
+        // reset parameter to original value
+        resetObjectTypeBypassOriginToOriginalValue(originalParamValue);
     }
 
     /**
