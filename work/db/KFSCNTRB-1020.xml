@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+  xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.1.xsd">
+ 
+  <changeSet id="KFSCNTRB-1020-1" author="sskinner@email.arizona.edu" runOnChange="true">
+    <sql><![CDATA[  
+
+insert into KRCR_CMPNT_T
+  (NMSPC_CD, CMPNT_CD, OBJ_ID,
+   VER_NBR, NM, ACTV_IND)
+  values('KFS-GL', 'CurrentAccountBalance', 'KFSCNTRB1020-1',
+         1, 'Current Account Balance', 'Y');
+
+insert into KRCR_PARM_T
+  (NMSPC_CD, CMPNT_CD, PARM_NM,
+  OBJ_ID, VER_NBR, PARM_TYP_CD, VAL,
+  PARM_DESC_TXT,
+  EVAL_OPRTR_CD, APPL_ID)
+  values ('KFS-GL', 'CurrentAccountBalance', 'CASH_BUDGET_RECORD_LEVEL',
+          'KFSCNTRB1020-1', 1, 'VALID', 'N',
+          'Identifies accounts that will have Cash Expenditure Authority and Fund Balance calculated for it on the Current Account Balance Screen. All other Budget Record Level codes will calculate Budget Balance Available.',
+          'A', 'KFS');
+
+insert into KRCR_PARM_T
+  (NMSPC_CD, CMPNT_CD, PARM_NM,
+  OBJ_ID, VER_NBR, PARM_TYP_CD, VAL,
+  PARM_DESC_TXT,
+  EVAL_OPRTR_CD, APPL_ID)
+  values ('KFS-GL', 'CurrentAccountBalance', 'INCOME_OBJECT_TYPE',
+          'KFSCNTRB1020-2', 1, 'VALID', 'CH;IC;IN;TI',
+          'Income object type codes.',
+          'A', 'KFS');
+
+insert into KRCR_PARM_T
+  (NMSPC_CD, CMPNT_CD, PARM_NM,
+  OBJ_ID, VER_NBR, PARM_TYP_CD, VAL,
+  PARM_DESC_TXT,
+  EVAL_OPRTR_CD, APPL_ID)
+  values ('KFS-GL', 'CurrentAccountBalance', 'EXPENSE_OBJECT_TYPE',
+          'KFSCNTRB1020-3', 1, 'VALID', 'EE;ES;EX;TE',
+          'Expense object type codes.',
+          'A', 'KFS');
+
+insert into KRCR_PARM_T
+  (NMSPC_CD, CMPNT_CD, PARM_NM,
+  OBJ_ID, VER_NBR, PARM_TYP_CD, VAL,
+  PARM_DESC_TXT,
+  EVAL_OPRTR_CD, APPL_ID)
+  values ('KFS-GL', 'CurrentAccountBalance', 'ENCUMBRANCE_BALANCE_TYPE',
+          'KFSCNTRB1020-4', 1, 'VALID', 'EX;IE;PE;CE',
+          'Encumbrance balance types.',
+          'A', 'KFS');
+
+insert into KRCR_PARM_T
+  (NMSPC_CD, CMPNT_CD, PARM_NM,
+  OBJ_ID, VER_NBR, PARM_TYP_CD, VAL,
+  PARM_DESC_TXT,
+  EVAL_OPRTR_CD, APPL_ID)
+  values ('KFS-GL', 'CurrentAccountBalance', 'CURRENT_ASSET_OBJECT_CODE',
+          'KFSCNTRB1020-5', 1, 'VALID', '8000;8100',
+          'Cash and other cash object codes.',
+          'A', 'KFS');
+
+insert into KRCR_PARM_T
+  (NMSPC_CD, CMPNT_CD, PARM_NM,
+  OBJ_ID, VER_NBR, PARM_TYP_CD, VAL,
+  PARM_DESC_TXT,
+  EVAL_OPRTR_CD, APPL_ID)
+  values ('KFS-GL', 'CurrentAccountBalance', 'CURRENT_LIABILITY_OBJECT_CODE',
+          'KFSCNTRB1020-6', 1, 'VALID', '9041',
+          'Current liability object codes.',
+          'A', 'KFS');
+
+insert into KRCR_PARM_T
+  (NMSPC_CD, CMPNT_CD, PARM_NM,
+  OBJ_ID, VER_NBR, PARM_TYP_CD, VAL,
+  PARM_DESC_TXT,
+  EVAL_OPRTR_CD, APPL_ID)
+  values ('KFS-GL', 'CurrentAccountBalance', 'FUND_BALANCE_OBJECT_CODE',
+          'KFSCNTRB1020-7', 1, 'VALID', '9899',
+          'Liability object codes.',
+          'A', 'KFS');
+]]>
+    </sql>
+    <rollback>
+      <sql><![CDATA[
+
+delete from KRCR_PARM_T
+  where NMSPC_CD = 'KFS-GL'
+  and CMPNT_CD = 'CurrentAccountBalance'
+  and PARM_NM = 'CASH_BUDGET_RECORD_LEVEL'
+  and OBJ_ID = 'KFSCNTRB1020-1'
+  and APPL_ID = 'KFS';
+
+delete from KRCR_PARM_T
+  where NMSPC_CD = 'KFS-GL'
+  and CMPNT_CD = 'CurrentAccountBalance'
+  and PARM_NM = 'INCOME_OBJECT_TYPE'
+  and OBJ_ID = 'KFSCNTRB1020-2'
+  and APPL_ID = 'KFS';
+
+delete from KRCR_PARM_T
+  where NMSPC_CD = 'KFS-GL'
+  and CMPNT_CD = 'CurrentAccountBalance'
+  and PARM_NM = 'EXPENSE_OBJECT_TYPE'
+  and OBJ_ID = 'KFSCNTRB1020-3'
+  and APPL_ID = 'KFS';
+  
+delete from KRCR_PARM_T
+  where NMSPC_CD = 'KFS-GL'
+  and CMPNT_CD = 'CurrentAccountBalance'
+  and PARM_NM = 'ENCUMBRANCE_BALANCE_TYPE'
+  and OBJ_ID = 'KFSCNTRB1020-4'
+  and APPL_ID = 'KFS';
+
+delete from KRCR_PARM_T
+  where NMSPC_CD = 'KFS-GL'
+  and CMPNT_CD = 'CurrentAccountBalance'
+  and PARM_NM = 'CURRENT_ASSET_OBJECT_CODE'
+  and OBJ_ID = 'KFSCNTRB1020-5'
+  and APPL_ID = 'KFS';
+
+delete from KRCR_PARM_T
+  where NMSPC_CD = 'KFS-GL'
+  and CMPNT_CD = 'CurrentAccountBalance'
+  and PARM_NM = 'CURRENT_LIABILITY_OBJECT_CODE'
+  and OBJ_ID = 'KFSCNTRB1020-6'
+  and APPL_ID = 'KFS';
+
+delete from KRCR_PARM_T
+  where NMSPC_CD = 'KFS-GL'
+  and CMPNT_CD = 'CurrentAccountBalance'
+  and PARM_NM = 'FUND_BALANCE_OBJECT_CODE'
+  and OBJ_ID = 'KFSCNTRB1020-7'
+  and APPL_ID = 'KFS';
+
+delete from KRCR_CMPNT_T
+  where NMSPC_CD = 'KFS-GL'
+  and CMPNT_CD = 'CurrentAccountBalance'
+  and OBJ_ID = 'KFSCNTRB1020-1'
+  and NM = 'Current Account Balance';
+
+]]>
+      </sql>
+    </rollback>
+  </changeSet>
+</databaseChangeLog>
