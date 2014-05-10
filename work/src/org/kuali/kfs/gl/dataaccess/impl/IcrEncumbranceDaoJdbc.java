@@ -36,12 +36,12 @@ public class IcrEncumbranceDaoJdbc extends PlatformAwareDaoBaseJdbc implements I
      * @see org.kuali.kfs.gl.dataaccess.IcrEncumbranceDao#buildIcrEncumbranceFeed()
      */
     @Override
-    public void buildIcrEncumbranceFeed(Integer fiscalYear, final String icrEncumbOriginCode, final Collection<String> icrEncumbBalanceTypes, final String[] expenseObjectTypes, final String costShareSubAccountType, final Writer fw) throws IOException {
+    public void buildIcrEncumbranceFeed(Integer fiscalYear, final String fiscalPeriod, final String icrEncumbOriginCode, final Collection<String> icrEncumbBalanceTypes, final String[] expenseObjectTypes, final String costShareSubAccountType, final Writer fw) throws IOException {
     final String rateSql = "select distinct t1.univ_fiscal_yr, t1.fin_coa_cd, t1.account_nbr, t1.sub_acct_nbr, "
         +   getDbPlatform().getIsNullFunction("t3.fin_series_id", "t2.fin_series_id") + " fin_series_id, " + getDbPlatform().getIsNullFunction("t3.icr_typ_cd", "t2.acct_icr_typ_cd") + " acct_icr_typ_cd "
         +  "from gl_encumbrance_t t1 join ca_account_t t2 on (t1.fin_coa_cd = t2.fin_coa_cd and t1.account_nbr = t2.account_nbr) "
         +  "left join ca_a21_sub_acct_t t3 on (t1.fin_coa_cd = t3.fin_coa_cd and t1.account_nbr = t3.account_nbr and t1.sub_acct_nbr = t3.sub_acct_nbr) "
-        +  "where t1.fin_balance_typ_cd in (" + icrEncumbBalanceTypes.toArray() + ") and t1.fs_origin_cd <> '" + icrEncumbOriginCode + "' "
+        +  "where t1.fin_balance_typ_cd in " + inString(icrEncumbBalanceTypes.toArray()) + " and t1.fs_origin_cd <> '" + icrEncumbOriginCode + "' "
         +  "and t1.univ_fiscal_yr >= " + fiscalYear + " "
         +  "and (t3.sub_acct_typ_cd is null or t3.sub_acct_typ_cd <> '" + costShareSubAccountType + "') ";
 
@@ -67,7 +67,7 @@ public class IcrEncumbranceDaoJdbc extends PlatformAwareDaoBaseJdbc implements I
                         encArgs[4] = accountNbr;
                         encArgs[5] = subAccountNbr;
 
-                        executeEncumbranceSql(icrEncumbOriginCode, icrEncumbBalanceTypes, expenseObjectTypes, encArgs, fw);
+                        executeEncumbranceSql(fiscalPeriod, icrEncumbOriginCode, icrEncumbBalanceTypes, expenseObjectTypes, encArgs, fw);
                     }
                 }
                 catch (Exception e) {
@@ -82,15 +82,16 @@ public class IcrEncumbranceDaoJdbc extends PlatformAwareDaoBaseJdbc implements I
     /**
      * Retrieves and formats ICR Encumbrance information and writes output records to the file writer
      *
+     * @param fiscalPeriod the current fiscal period
      * @param icrEncumbOriginCode the ICR origin code - system parameter INDIRECT_COST_RECOVERY_ENCUMBRANCE_ORIGINATION
      * @param icrEncumbBalanceTypes a list of balance types - system parameter INDIRECT_COST_RECOVERY_ENCUMBRANCE_BALANCE_TYPES
      * @param expenseObjectTypes a list of expense object types
      * @param encArgs a list of query arguments
      * @param fw the file writer
      */
-    protected void executeEncumbranceSql(final String icrEncumbOriginCode, final Collection<String> icrEncumbBalanceTypes, final String[] expenseObjectTypes, Object[] encArgs, final Writer fw) {
+    protected void executeEncumbranceSql(final String fiscalPeriod, final String icrEncumbOriginCode, final Collection<String> icrEncumbBalanceTypes, final String[] expenseObjectTypes, Object[] encArgs, final Writer fw) {
         final String encumbSql = "select t1.univ_fiscal_yr, t1.fin_coa_cd, t1.account_nbr, t1.sub_acct_nbr, t5.fin_object_cd, t1.fin_balance_typ_cd, "
-                + "t1.fdoc_typ_cd, t1.fdoc_nbr, " + "sum(" + getDbPlatform().getIsNullFunction("t1.acln_encum_amt - t1.acln_encum_cls_amt", "0") + " * "
+                + "t1.fdoc_typ_cd, t1.fdoc_nbr, t4.fin_obj_typ_cd, " + "sum(" + getDbPlatform().getIsNullFunction("t1.acln_encum_amt - t1.acln_encum_cls_amt", "0") + " * "
                 +  getDbPlatform().getIsNullFunction("t5.awrd_icr_rate_pct", "0") + " * .01) encumb_amt  " + "from gl_encumbrance_t t1 "
                 + "join ca_icr_auto_entr_t t5 on t5.fin_series_id = ? and t5.univ_fiscal_yr = t1.univ_fiscal_yr "
                 + "and t5.trn_debit_crdt_cd = 'D' "
@@ -98,10 +99,10 @@ public class IcrEncumbranceDaoJdbc extends PlatformAwareDaoBaseJdbc implements I
                 + "where not exists (select 1 from ca_icr_excl_type_t where acct_icr_typ_cd = ? "
                 + "and acct_icr_excl_typ_actv_ind = 'Y' and fin_object_cd = t1.fin_object_cd) "
                 + "and t1.univ_fiscal_yr = ? and t1.fin_coa_cd = ? and t1.account_nbr = ? and t1.sub_acct_nbr = ? "
-                + "and t1.fin_balance_typ_cd in (" + icrEncumbBalanceTypes.toArray() + ") and t1.fs_origin_cd <> '" + icrEncumbOriginCode + "' "
-                + "and t4.fin_obj_typ_cd IN (" + expenseObjectTypes + ") "
-                + "group by t1.univ_fiscal_yr, t1.fin_coa_cd, t1.account_nbr, t1.sub_acct_nbr, t5.fin_object_cd, t1.fin_balance_typ_cd, "
-                + "t1.fdoc_typ_cd, t1.fdoc_nbr";
+                + "and t1.fin_balance_typ_cd in " + inString(icrEncumbBalanceTypes.toArray()) + " and t1.fs_origin_cd <> '" + icrEncumbOriginCode + "' "
+                + "and t4.fin_obj_typ_cd IN " + inString(expenseObjectTypes)
+                + " group by t1.univ_fiscal_yr, t1.fin_coa_cd, t1.account_nbr, t1.sub_acct_nbr, t5.fin_object_cd, t1.fin_balance_typ_cd, "
+                + "t1.fdoc_typ_cd, t1.fdoc_nbr, t4.fin_obj_typ_cd";
 
         getJdbcTemplate().query(encumbSql, encArgs, new ResultSetExtractor() {
             @Override
@@ -117,6 +118,7 @@ public class IcrEncumbranceDaoJdbc extends PlatformAwareDaoBaseJdbc implements I
                         String balanceType = rs.getString("fin_balance_typ_cd");
                         String docType = rs.getString("fdoc_typ_cd");
                         String docNbr = rs.getString("fdoc_nbr");
+                        String objectTypeCode = rs.getString("fin_obj_typ_cd");
 
                         KualiDecimal encumb_amt = new KualiDecimal(rs.getDouble("encumb_amt"));
                         KualiDecimal current_amt = KualiDecimal.ZERO;
@@ -156,8 +158,8 @@ public class IcrEncumbranceDaoJdbc extends PlatformAwareDaoBaseJdbc implements I
                                 + objectCode // Object Code 19-22
                                 + "---" // Sub Object 23-25
                                 + balanceType // balance type code
-                                + StringUtils.rightPad("", 2) // Object Type 28-29
-                                + StringUtils.rightPad("", 2) // Fiscal Period 30-31
+                                + objectTypeCode // Object Type 28-29
+                                + fiscalPeriod // Fiscal Period 30-31
                                 + StringUtils.rightPad(docType, 4) // Document Type 32-35
                                 + icrEncumbOriginCode // Origin Code 36-37
                                 + StringUtils.rightPad(docNbr, 14) // Doc Number 38-51
@@ -218,5 +220,25 @@ public class IcrEncumbranceDaoJdbc extends PlatformAwareDaoBaseJdbc implements I
         });
 
         return icrAmount;
+    }
+
+    /**
+     * Creates a String bounded with parantheses for creating SQL queries
+     *
+     * @param cobj the array to include in an SQL query
+     * @return the resulting String
+     */
+    protected String inString(Object[] cobj) {
+        StringBuffer sb = new StringBuffer("(");
+        for (int i = 0; i < cobj.length; i++) {
+            sb.append("'");
+            sb.append(cobj[i].toString());
+            sb.append("'");
+            if (i < cobj.length - 1) {
+                sb.append(',');
+            }
+        }
+        sb.append(')');
+        return sb.toString();
     }
 }

@@ -1246,8 +1246,13 @@
 	<bean id="glIcrEncumbranceService-parentBean" class="org.kuali.kfs.gl.batch.service.impl.IcrEncumbranceServiceImpl">
 		<property name="icrEncumbranceDao">
 			<ref bean="glIcrEncumbranceDao" />
-		</property>		
-		<property name="parameterService" ref="parameterService" />
+		</property>			
+		<property name="parameterService">
+			<ref bean="parameterService" />
+		</property>
+		<property name="universityDateService">
+			<ref bean="universityDateService" />
+		</property>
 		<property name="batchFileDirectoryName" value="${staging.directory}/gl/originEntry"/>		
 	</bean>
 	

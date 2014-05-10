@@ -36,6 +36,7 @@ public class IcrEncumbranceServiceImpl implements IcrEncumbranceService {
 
     protected IcrEncumbranceDao icrEncumbranceDao;
     protected ParameterService parameterService;
+    protected UniversityDateService universityDateService;
     protected String batchFileDirectoryName;
 
     /**
@@ -45,10 +46,15 @@ public class IcrEncumbranceServiceImpl implements IcrEncumbranceService {
     public File buildIcrEncumbranceFeed() {
         File encumbranceFeedFile = null;
 
-        Integer currentFiscalYear = SpringContext.getBean(UniversityDateService.class).getCurrentFiscalYear();
+        Integer currentFiscalYear = universityDateService.getCurrentFiscalYear();
+        String currentFiscalPeriod = universityDateService.getCurrentUniversityDate().getUniversityFiscalAccountingPeriod();
+
+        //Get Expense Object Types and Cost Share Sub-Account Type
         ObjectTypeService objectTypeService = SpringContext.getBean(ObjectTypeService.class);
         String[] expenseObjectTypes = objectTypeService.getBasicExpenseObjectTypes(currentFiscalYear).toArray(new String[0]);
         String costShareSubAccountType = KFSConstants.SubAccountType.COST_SHARE;
+
+        //Get ICR Encumbrance Origination Code and Balance Types
         String icrEncumbOriginCode = parameterService.getParameterValueAsString(KFSConstants.CoreModuleNamespaces.GL, GeneralLedgerConstants.PosterService.ICR_ENCUMBRANCE_FEED_PARM_TYP, GeneralLedgerConstants.PosterService.ICR_ENCUMBRANCE_ORIGIN_CODE_PARM_NM);
         Collection<String> icrEncumbBalanceTypes = new ArrayList<String>( parameterService.getParameterValuesAsString(KFSConstants.CoreModuleNamespaces.GL, GeneralLedgerConstants.PosterService.ICR_ENCUMBRANCE_FEED_PARM_TYP, GeneralLedgerConstants.PosterService.ICR_ENCUMBRANCE_BALANCE_TYPE_PARM_NM) );
         if (StringUtils.isBlank(icrEncumbOriginCode) || icrEncumbBalanceTypes.isEmpty()) {
@@ -61,7 +67,7 @@ public class IcrEncumbranceServiceImpl implements IcrEncumbranceService {
 
             BufferedWriter fw = new BufferedWriter(new FileWriter(encumbranceFeedFile));
             try {
-                icrEncumbranceDao.buildIcrEncumbranceFeed(currentFiscalYear, icrEncumbOriginCode, icrEncumbBalanceTypes, expenseObjectTypes, costShareSubAccountType, fw);
+                icrEncumbranceDao.buildIcrEncumbranceFeed(currentFiscalYear, currentFiscalPeriod, icrEncumbOriginCode, icrEncumbBalanceTypes, expenseObjectTypes, costShareSubAccountType, fw);
             }
             finally {
                 if (fw != null) {
@@ -86,21 +92,38 @@ public class IcrEncumbranceServiceImpl implements IcrEncumbranceService {
     }
 
     /**
-     * @param icrEncumbranceDao
+     * Sets the icrEncumbranceDao attribute, allowing injection of an implementation of that data access object
+     *
+     * @param icrEncumbranceDao the icrEncumbranceDao implementation to set
+     * @see org.kuali.kfs.gl.dataaccess.IcrEncumbranceDao
      */
     public void setIcrEncumbranceDao(IcrEncumbranceDao icrEncumbranceDao) {
         this.icrEncumbranceDao = icrEncumbranceDao;
     }
 
     /**
-     * @param parameterService
+     * Sets the parameterService attribute, allowing injection of an implementation of that service
+     *
+     * @param parameterService the parameterService to set.
      */
     public void setParameterService(ParameterService parameterService) {
         this.parameterService = parameterService;
     }
 
     /**
-     * @param batchFileDirectoryName
+     * Sets the unversityDateService attribute, allowing injection of an implementation of that service
+     *
+     * @param universityDateService the universityDateService implementation to set
+     * @see org.kuali.kfs.sys.service.UniversityDateService
+     */
+    public void setUniversityDateService(UniversityDateService universityDateService) {
+        this.universityDateService = universityDateService;
+    }
+
+    /**
+     * Sets the batchFileDirectoryName attribute value.
+     *
+     * @param batchFileDirectoryName the batchFileDirectoryName to set.
      */
     public void setBatchFileDirectoryName(String batchFileDirectoryName) {
         this.batchFileDirectoryName = batchFileDirectoryName;
