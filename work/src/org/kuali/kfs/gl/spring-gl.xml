@@ -1243,7 +1243,7 @@
 	<bean id="glIcrEncumbranceDao" parent="platformAwareDaoJdbc" class="org.kuali.kfs.gl.dataaccess.impl.IcrEncumbranceDaoJdbc" />
 	
 	<bean id="glIcrEncumbranceService" parent="glIcrEncumbranceService-parentBean"/>
-	<bean id="glIcrEncumbranceService-parentBean" class="org.kuali.kfs.gl.batch.service.impl.IcrEncumbranceServiceImpl">
+	<bean id="glIcrEncumbranceService-parentBean" abstract="true" class="org.kuali.kfs.gl.batch.service.impl.IcrEncumbranceServiceImpl">
 		<property name="icrEncumbranceDao">
 			<ref bean="glIcrEncumbranceDao" />
 		</property>			
