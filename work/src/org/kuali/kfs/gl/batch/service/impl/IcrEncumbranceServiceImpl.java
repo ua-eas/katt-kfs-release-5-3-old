@@ -30,7 +30,10 @@ import org.kuali.kfs.sys.KFSConstants;
 import org.kuali.kfs.sys.context.SpringContext;
 import org.kuali.kfs.sys.service.UniversityDateService;
 import org.kuali.rice.coreservice.framework.parameter.ParameterService;
+import org.springframework.transaction.annotation.Transactional;
 
+
+@Transactional
 public class IcrEncumbranceServiceImpl implements IcrEncumbranceService {
     private static org.apache.log4j.Logger LOG = org.apache.log4j.Logger.getLogger(IcrEncumbranceServiceImpl.class);
 
