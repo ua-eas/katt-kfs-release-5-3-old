@@ -59,7 +59,7 @@ public class IcrEncumbranceServiceTest extends KualiTestBase {
         File icrEncumbranceFeedFile = icrEncumbranceService.buildIcrEncumbranceFeed();
         assertTrue("The ICR Encumbrance file was found to be null.", ObjectUtils.isNotNull(icrEncumbranceFeedFile));
         assertTrue("The ICR Encumbrance file does not exist, should be at: " + icrEncumbranceFeedFile.getAbsolutePath(), icrEncumbranceFeedFile.exists());
-        assertTrue("The ICR Encumbrance file should not be empty, located at: " + icrEncumbranceFeedFile.getAbsolutePath(), !isFileEmpty(icrEncumbranceFeedFile));
+        assertFalse("The ICR Encumbrance file should not be empty, located at: " + icrEncumbranceFeedFile.getAbsolutePath(), isFileEmpty(icrEncumbranceFeedFile));
         FileUtils.delete(icrEncumbranceFeedFile);
     }
 
@@ -86,10 +86,11 @@ public class IcrEncumbranceServiceTest extends KualiTestBase {
      */
     protected static class UniversityDateServiceDummy implements UniversityDateService{
 
+        // 14-Mar-2009, period 09
         private static final Integer YEAR = 2009;
         private static final int MONTH = 3;
         private static final int DAY = 14;
-        private static final String PERIOD = "";
+        private static final String PERIOD = "09";
         private static final Date DATE;
         static{
             SimpleDateFormat sdf = new SimpleDateFormat("YY-MM-dd");
@@ -112,7 +113,7 @@ public class IcrEncumbranceServiceTest extends KualiTestBase {
             UniversityDate universityDate = new UniversityDate();
             java.sql.Date sqlDate = new java.sql.Date(DATE.getTime());
             universityDate.setUniversityDate(sqlDate);
-            universityDate.setUniversityFiscalAccountingPeriod("03");
+            universityDate.setUniversityFiscalAccountingPeriod(PERIOD);
             return universityDate;
         }
 
