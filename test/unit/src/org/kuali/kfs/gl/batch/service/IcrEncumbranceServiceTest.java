@@ -80,11 +80,16 @@ public class IcrEncumbranceServiceTest extends KualiTestBase {
     }
 
 
+    /*
+     * Creating inner class to act as dummy date service. This class will be set
+     * as IcrEncumbranceServiceImpl's date service.
+     */
     protected static class UniversityDateServiceDummy implements UniversityDateService{
 
         private static final Integer YEAR = 2009;
         private static final int MONTH = 3;
         private static final int DAY = 14;
+        private static final String PERIOD = "";
         private static final Date DATE;
         static{
             SimpleDateFormat sdf = new SimpleDateFormat("YY-MM-dd");
@@ -107,6 +112,7 @@ public class IcrEncumbranceServiceTest extends KualiTestBase {
             UniversityDate universityDate = new UniversityDate();
             java.sql.Date sqlDate = new java.sql.Date(DATE.getTime());
             universityDate.setUniversityDate(sqlDate);
+            universityDate.setUniversityFiscalAccountingPeriod("03");
             return universityDate;
         }
 
