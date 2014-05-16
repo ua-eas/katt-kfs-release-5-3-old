@@ -18,24 +18,19 @@ package org.kuali.kfs.gl.batch.service;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang.NotImplementedException;
 import org.apache.commons.lang.StringUtils;
 import org.apache.cxf.helpers.FileUtils;
 import org.kuali.kfs.gl.batch.service.impl.IcrEncumbranceServiceImpl;
 import org.kuali.kfs.sys.ConfigureContext;
-import org.kuali.kfs.sys.businessobject.UniversityDate;
 import org.kuali.kfs.sys.context.KualiTestBase;
 import org.kuali.kfs.sys.context.ProxyUtils;
 import org.kuali.kfs.sys.context.SpringContext;
-import org.kuali.kfs.sys.service.UniversityDateService;
+import org.kuali.kfs.sys.fixture.UniversityDateServiceFixture;
 import org.kuali.rice.krad.util.ObjectUtils;
 
 
@@ -63,9 +58,9 @@ public class IcrEncumbranceServiceTest extends KualiTestBase {
         super.setUp();
         icrEncumbranceService = SpringContext.getBean(IcrEncumbranceService.class);
 
-        // If we have time, create new spring bean in spring-gl-test.xml and inject UniversityDateServiceDummy
+        // If we have time, see if it is possible to inject the date service via Spring config (spring-gl-test.xml)
         icrEncumbranceService = (IcrEncumbranceServiceImpl) ProxyUtils.getTargetIfProxied(icrEncumbranceService);
-        ((IcrEncumbranceServiceImpl)icrEncumbranceService).setUniversityDateService(new UniversityDateServiceDummy());
+        ((IcrEncumbranceServiceImpl)icrEncumbranceService).setUniversityDateService(UniversityDateServiceFixture.DATE_2009_03_14.createUniversityDateService());
     }
 
 
@@ -147,63 +142,4 @@ public class IcrEncumbranceServiceTest extends KualiTestBase {
         return StringUtils.isBlank(testLine);
     }
 
-
-    /*
-     * Creating inner class to act as dummy date service. This class will be set
-     * as IcrEncumbranceServiceImpl's date service.
-     */
-    protected static class UniversityDateServiceDummy implements UniversityDateService{
-
-        // 14-Mar-2009, period 09
-        private static final Integer YEAR = 2009;
-        private static final int MONTH = 3;
-        private static final int DAY = 14;
-        private static final String PERIOD = "09";
-        private static final Date DATE;
-        static{
-            SimpleDateFormat sdf = new SimpleDateFormat("YY-MM-dd");
-            try {
-                DATE = sdf.parse(String.format("%s-%s-%s", YEAR, MONTH, DAY));
-            }
-            catch (ParseException e) {
-                throw new RuntimeException(e);
-            }
-        }
-
-
-        public UniversityDateServiceDummy(){
-            //
-        }
-
-
-        @Override
-        public UniversityDate getCurrentUniversityDate() {
-            UniversityDate universityDate = new UniversityDate();
-            java.sql.Date sqlDate = new java.sql.Date(DATE.getTime());
-            universityDate.setUniversityDate(sqlDate);
-            universityDate.setUniversityFiscalAccountingPeriod(PERIOD);
-            return universityDate;
-        }
-
-        @Override
-        public Integer getFiscalYear(Date date) {
-            return YEAR;
-        }
-
-        @Override
-        public Date getFirstDateOfFiscalYear(Integer fiscalYear) {
-            throw new NotImplementedException();
-        }
-
-        @Override
-        public Date getLastDateOfFiscalYear(Integer fiscalYear) {
-            throw new NotImplementedException();
-        }
-
-        @Override
-        public Integer getCurrentFiscalYear() {
-            return YEAR;
-        }
-
-    }
 }
