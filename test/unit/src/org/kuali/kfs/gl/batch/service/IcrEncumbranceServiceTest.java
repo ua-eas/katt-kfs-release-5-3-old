@@ -21,6 +21,9 @@ import java.io.FileReader;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.NotImplementedException;
@@ -36,33 +39,98 @@ import org.kuali.kfs.sys.service.UniversityDateService;
 import org.kuali.rice.krad.util.ObjectUtils;
 
 
+/**
+ * The test class tests the file generation of the IcrEncumbranceService.
+ */
 @ConfigureContext
 public class IcrEncumbranceServiceTest extends KualiTestBase {
 
+    // Based KFS 5.3 contrib branch demo data
+    private static final String ICR_ENCUMBRANCE_TEST_DATA_FILE_PATH = "test/unit/src/org/kuali/kfs/gl/batch/fixture/gl_icrencmb.data.txt";
+
+    // The service to be tested
     private IcrEncumbranceService icrEncumbranceService;
 
 
+    /**
+     * Sets the icrEncumbranceService, and also changes icrEncumbranceService's
+     * UniversityDateService in order to line up with test data dates.
+     *
+     * @see junit.framework.TestCase#setUp()
+     */
     @Override
-    protected void setUp() throws Exception {
+    public void setUp() throws Exception {
         super.setUp();
         icrEncumbranceService = SpringContext.getBean(IcrEncumbranceService.class);
+
+        // If we have time, create new spring bean in spring-gl-test.xml and inject UniversityDateServiceDummy
         icrEncumbranceService = (IcrEncumbranceServiceImpl) ProxyUtils.getTargetIfProxied(icrEncumbranceService);
         ((IcrEncumbranceServiceImpl)icrEncumbranceService).setUniversityDateService(new UniversityDateServiceDummy());
     }
 
 
     /**
-     * This test runs several checks for file creation and correct contents of
-     * the generated file.
+     * This test checks that the IcrEncumbranceService will:
+     * 1.) Query the DB and produce a non-empty feed file.
+     * 2.) Ensure that records in the file are what is expected
      */
     public void testBuildIcrEncumbranceFeed(){
         File icrEncumbranceFeedFile = icrEncumbranceService.buildIcrEncumbranceFeed();
+
         assertTrue("The ICR Encumbrance file was found to be null.", ObjectUtils.isNotNull(icrEncumbranceFeedFile));
         assertTrue("The ICR Encumbrance file does not exist, should be at: " + icrEncumbranceFeedFile.getAbsolutePath(), icrEncumbranceFeedFile.exists());
         assertFalse("The ICR Encumbrance file should not be empty, located at: " + icrEncumbranceFeedFile.getAbsolutePath(), isFileEmpty(icrEncumbranceFeedFile));
+        assertTrue("Not all lines are present or generated correctly.", linesGeneratedCorrectly(icrEncumbranceFeedFile));
+
         FileUtils.delete(icrEncumbranceFeedFile);
     }
 
+
+    /*
+     * Ensure generated file contains all lines as expected.
+     */
+    private boolean linesGeneratedCorrectly(File generatedIcrEncumbranceFeedFile){
+
+        // Pull the test data into a list
+        List<String> expectedLines = null;
+        try {
+            expectedLines = IOUtils.readLines(new FileReader(ICR_ENCUMBRANCE_TEST_DATA_FILE_PATH));
+        }catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+
+        // Pull the service generated lines, as assembled from DB queries and logic
+        List<String> generatedLines = null;
+        try {
+            generatedLines = IOUtils.readLines(new FileReader(generatedIcrEncumbranceFeedFile));
+        }catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+
+        // Place into set for easy comparison
+        Set<String> expectedSet = new HashSet<String>();
+        expectedSet.addAll(expectedLines);
+
+        // Place into set for easy comparison
+        Set<String> generatedSet = new HashSet<String>();
+        generatedSet.addAll(generatedLines);
+
+        // Check that all test data lines are present in service generated lines
+        for(String line : expectedSet){
+            if(!generatedSet.contains(line)){
+                // The generated lines should contain all test data lines, this is a failure
+                return false;
+            }
+        }
+
+        // If we get here, the service generated all lines correctly
+        return true;
+    }
+
+
+    /*
+     * Checks that the input file has at least one non-blank line
+     */
     private boolean isFileEmpty(File file){
         BufferedReader reader = null;
         String testLine = null;
