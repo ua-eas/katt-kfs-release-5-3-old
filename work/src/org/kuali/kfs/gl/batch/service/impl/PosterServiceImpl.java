@@ -205,7 +205,9 @@ public class PosterServiceImpl implements PosterService {
      */
     @Override
     public void postIcrEncumbranceEntries() {
-        LOG.debug("postIcrEncumbranceEntries() started");
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("postIcrEncumbranceEntries() started");
+        }
         Date runDate = dateTimeService.getCurrentSqlDate();
         try{
             FileReader INPUT_GLE_FILE = new FileReader(batchFileDirectoryName + File.separator + GeneralLedgerConstants.BatchFileSystem.ICR_ENCUMBRANCE_POSTER_INPUT_FILE + GeneralLedgerConstants.BatchFileSystem.EXTENSION);
@@ -1084,8 +1086,9 @@ public class PosterServiceImpl implements PosterService {
      * @return true if an offset would be needed for this entry, false otherwise
      */
     protected boolean generateOffset(OriginEntryFull tran, int mode, Map<String,Integer> reportSummary, LedgerSummaryReport ledgerSummaryReport, PrintStream invalidGroup, UniversityDate runUniversityDate, String line, PrintStream OUTPUT_GLE_FILE_ps) {
-
-        LOG.debug("generateOffset() started");
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("generateOffset() started");
+        }
         List<Message> errors = new ArrayList();
         OriginEntryFull offsetEntry = new OriginEntryFull(tran);
 
