@@ -1,18 +1,18 @@
 /*
- * Copyright 2006 The Kuali Foundation
- *
- * Licensed under the Educational Community License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.opensource.org/licenses/ecl2.php
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+* Copyright 2006 The Kuali Foundation
+*
+* Licensed under the Educational Community License, Version 2.0 (the "License");
+* you may not use this file except in compliance with the License.
+* You may obtain a copy of the License at
+*
+* http://www.opensource.org/licenses/ecl2.php
+*
+* Unless required by applicable law or agreed to in writing, software
+* distributed under the License is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+* See the License for the specific language governing permissions and
+* limitations under the License.
+*/
 package org.kuali.kfs.gl;
 
 import java.util.List;
@@ -33,8 +33,8 @@ import org.kuali.rice.krad.datadictionary.AttributeDefinition;
 
 
 /**
- * This class holds constants specifically for use within the General Ledger module.
- */
+* This class holds constants specifically for use within the General Ledger module.
+*/
 public class GeneralLedgerConstants {
 
     public static final String INSERT_CODE = "I";
@@ -202,6 +202,8 @@ public class GeneralLedgerConstants {
         static final public String CONTINUATION_ACCOUNT_BYPASS_ORIGINATION_CODES = "CONTINUATION_ACCOUNT_BYPASS_ORIGINATIONS";
         static final public String CONTINUATION_ACCOUNT_BYPASS_BALANCE_TYPE_CODES = "CONTINUATION_ACCOUNT_BYPASS_BALANCE_TYPE_CODES";
         static final public String CONTINUATION_ACCOUNT_BYPASS_DOCUMENT_TYPE_CODES = "CONTINUATION_ACCOUNT_BYPASS_DOCUMENT_TYPES";
+
+        static final public String OBJECT_TYPE_BYPASS_ORIGINATIONS = "OBJECT_TYPE_BYPASS_ORIGINATIONS";
     }
 
     public static class GlSummaryReport {
@@ -250,7 +252,7 @@ public class GeneralLedgerConstants {
 
         static final public String BACKUP_FILE = "gl_glbackup";
 
-        static final public String  COLLECTOR_BACKUP_FILE = "col_glbackup";
+        static final public String COLLECTOR_BACKUP_FILE = "col_glbackup";
 
         static final public String COLLECTOR_PRE_SCRUBBER = "col_prescrub";
         static final public String COLLECTOR_SCRUBBER_INPUT_FILE = "col_sortscrb";
@@ -279,23 +281,25 @@ public class GeneralLedgerConstants {
         static final public String ICR_TRANSACTIONS_OUTPUT_FILE = "gl_icrtrans";
         //todo - create sort step
         static final public String ICR_POSTER_INPUT_FILE = "gl_sorticr";
+
         static final public String ICR_POSTER_ERROR_OUTPUT_FILE = "gl_icrerrs";
 
         static final public String ICR_ENCUMBRANCE_OUTPUT_FILE = "gl_icrencmb";
         static final public String ICR_ENCUMBRANCE_POSTER_INPUT_FILE = "gl_sorticrencmb";
         static final public String ICR_ENCUMBRANCE_POSTER_ERROR_OUTPUT_FILE = "gl_icrencmberrs";
-		static final public String NIGHTLY_OUT_FILE = "gl_glentry_kfs";
-		static final public String EXTRACT_TRANSACTION_FILE = "gl_glentry_pdp";
 
-		//year end part
-		static final public String ORGANIZATION_REVERSION_PRE_CLOSING_FILE = "gl_org_reversion_pre_closing";
-		static final public String ORGANIZATION_REVERSION_CLOSING_FILE = "gl_org_reversion_closing";
-		static final public String ENCUMBRANCE_FORWARD_FILE = "gl_encumbrance_forward";
-		static final public String CLOSE_NOMINAL_ACTIVITY_FILE = "gl_close_nominal_activity";
-		static final public String BALANCE_FORWARDS_FILE = "gl_balance_forwards";
-		static final public String BALANCE_FORWARDS_CLOSED_FILE = "gl_balance_forwards_closed";
+        static final public String NIGHTLY_OUT_FILE = "gl_glentry_kfs";
+        static final public String EXTRACT_TRANSACTION_FILE = "gl_glentry_pdp";
 
-		static final public String LABOR_GL_ENTRY_FILE = "gl_glentry_lab";
+        //year end part
+        static final public String ORGANIZATION_REVERSION_PRE_CLOSING_FILE = "gl_org_reversion_pre_closing";
+        static final public String ORGANIZATION_REVERSION_CLOSING_FILE = "gl_org_reversion_closing";
+        static final public String ENCUMBRANCE_FORWARD_FILE = "gl_encumbrance_forward";
+        static final public String CLOSE_NOMINAL_ACTIVITY_FILE = "gl_close_nominal_activity";
+        static final public String BALANCE_FORWARDS_FILE = "gl_balance_forwards";
+        static final public String BALANCE_FORWARDS_CLOSED_FILE = "gl_balance_forwards_closed";
+
+        static final public String LABOR_GL_ENTRY_FILE = "gl_glentry_lab";
     }
 
     public static class PosterOutputSummaryEntry {
