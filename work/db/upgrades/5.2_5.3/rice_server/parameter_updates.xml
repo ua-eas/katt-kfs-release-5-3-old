@@ -67,7 +67,7 @@
 			<column name="OBJ_ID" value="KFSCNTRB-846_ERROR_CERT_02"/>
 			<column name="VER_NBR" valueNumeric="1" />
 			<column name="PARM_TYP_CD" value="VALID"/>
-			<column name="VAL" value="FEDSUB=2"/>
+			<column name="VAL" value="FEDERA=2"/>
 			<column name="PARM_DESC_TXT" value="Specific sub-fund groups that are excepted from the DEFAULT_NUMBER_OF_FISCAL_PERIODS_ERROR_CERTIFICATION_TAB_REQUIRED parameter. If the account used on the TO side includes sub-funds specified in this parameter, the number of fiscal periods associated with the sub fund should be used instead of the default to determine whether or not the Error Certification tab is required. Format of list is sub fund 1=number of fiscal periods; sub fund 2=number of fiscal periods."/>
 			<column name="EVAL_OPRTR_CD" value="A"/>
 			<column name="APPL_ID" value="KFS"/>

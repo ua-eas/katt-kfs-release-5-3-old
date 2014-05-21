@@ -77,7 +77,7 @@ public class SalaryExpenseTransferDocumentPreRules extends PromptBeforeValidatio
         final WorkflowDocument workflowDocument = stDocument.getDocumentHeader().getWorkflowDocument();
         Set<String> currentActiveNodes = workflowDocument.getCurrentNodeNames();
 
-        if (workflowDocument.isEnroute() && workflowDocument.getCurrentRouteNodeInstances().contains(KFSConstants.RouteLevelNames.ACCOUNT)) {
+        if (currentActiveNodes.contains(KFSConstants.RouteLevelNames.ACCOUNT)) {
             return true;
         }
         else {

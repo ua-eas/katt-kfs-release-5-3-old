@@ -248,12 +248,12 @@ public class SalaryExpenseTransferErrorCertificationValidationTest extends Kuali
      * The validation will use the UniversityDateService that is defined in this test class.
      */
     @SuppressWarnings("deprecation")
-    public void testOlderFEDSUBTargetAccountingLine() {
+    public void testOlderSubFundTargetAccountingLine() {
         validation.setUniversityDateService(universityDateService);
 
         Account account = new Account();
         SubFundGroup subFundGroup = new SubFundGroup();
-        subFundGroup.setSubFundGroupCode("FEDSUB");
+        subFundGroup.setSubFundGroupCode("FEDERA");
         account.setSubFundGroup(subFundGroup);
 
         // create a target accounting line for testing in set object
@@ -282,12 +282,12 @@ public class SalaryExpenseTransferErrorCertificationValidationTest extends Kuali
      * The validation will use the UniversityDateService that is defined in this test class.
      */
     @SuppressWarnings("deprecation")
-    public void testPriorYearFEDSUBTargetAccountingLine() {
+    public void testPriorYearSubFundTargetAccountingLine() {
         validation.setUniversityDateService(universityDateService);
 
         Account account = new Account();
         SubFundGroup subFundGroup = new SubFundGroup();
-        subFundGroup.setSubFundGroupCode("FEDSUB");
+        subFundGroup.setSubFundGroupCode("FEDERA");
         account.setSubFundGroup(subFundGroup);
 
         // create a target accounting line for testing in set object

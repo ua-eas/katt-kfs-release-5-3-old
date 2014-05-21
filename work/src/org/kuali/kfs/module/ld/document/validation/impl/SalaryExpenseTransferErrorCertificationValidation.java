@@ -168,7 +168,8 @@ public class SalaryExpenseTransferErrorCertificationValidation extends GenericVa
             LOG.debug("in checkCurrentSubFund");
         }
         SubFundGroup subFundGroup = currentTargetLine.getAccount().getSubFundGroup();
-        String newComparePeriods = parameterService.getSubParameterValueAsString(KfsParameterConstants.LABOR_DOCUMENT.class, ERROR_CERTIFICATION_DEFAULT_OVERRIDE_BY_SUB_FUND, subFundGroup.getSubFundGroupCode());
+        String subFundGroupCode = subFundGroup.getSubFundGroupCode();
+        String newComparePeriods = parameterService.getSubParameterValueAsString(KfsParameterConstants.LABOR_DOCUMENT.class, ERROR_CERTIFICATION_DEFAULT_OVERRIDE_BY_SUB_FUND, subFundGroupCode);
 
         if (newComparePeriods != null) {
             periodsFromParameter = new Integer(newComparePeriods);
