@@ -21,26 +21,19 @@ import java.util.List;
 
 import org.apache.commons.io.IOUtils;
 import org.kuali.kfs.gl.GeneralLedgerConstants;
-import org.kuali.kfs.gl.batch.service.IcrEncumbranceService;
-import org.kuali.kfs.gl.batch.service.impl.IcrEncumbranceServiceImpl;
 import org.kuali.kfs.sys.ConfigureContext;
-import org.kuali.kfs.sys.context.KualiTestBase;
-import org.kuali.kfs.sys.context.ProxyUtils;
 import org.kuali.kfs.sys.context.SpringContext;
-import org.kuali.kfs.sys.fixture.UniversityDateServiceFixture;
-import org.kuali.rice.core.api.config.property.ConfigurationService;
-import org.kuali.rice.core.api.datetime.DateTimeService;
+import org.kuali.kfs.sys.suite.AnnotationTestSuite;
+import org.kuali.kfs.sys.suite.IcrEncumbranceSuite;
 
 /**
  * A class to test functionality of the IcrEncumbranceSortStepTest class.
  */
 @ConfigureContext
-public class IcrEncumbranceSortStepTest extends KualiTestBase {
+@AnnotationTestSuite(IcrEncumbranceSuite.class)
+public class IcrEncumbranceSortStepTest extends IcrEncumbranceStepTestBase {
 
     private IcrEncumbranceSortStep icrEncumbranceSortStep;
-    private IcrEncumbranceService icrEncumbranceService;
-    private DateTimeService dateTimeService;
-    private ConfigurationService kualiConfigurationService;
 
     /**
      * Setup services used in test.
@@ -50,22 +43,14 @@ public class IcrEncumbranceSortStepTest extends KualiTestBase {
     @Override
     public void setUp() throws Exception {
         super.setUp();
-
-        // Init services
         icrEncumbranceSortStep = SpringContext.getBean(IcrEncumbranceSortStep.class);
-        icrEncumbranceService = SpringContext.getBean(IcrEncumbranceService.class);
-        dateTimeService = SpringContext.getBean(DateTimeService.class);
-        kualiConfigurationService = SpringContext.getBean(ConfigurationService.class);
-
-        // If we have time, see if it is possible to inject the date service via Spring config (spring-gl-test.xml)
-        icrEncumbranceService = (IcrEncumbranceServiceImpl) ProxyUtils.getTargetIfProxied(icrEncumbranceService);
-        ((IcrEncumbranceServiceImpl)icrEncumbranceService).setUniversityDateService(UniversityDateServiceFixture.DATE_2009_03_14.createUniversityDateService());
     }
 
     /**
      * Test to ensure IcrEncumbranceSortStep is performing file i/o correctly,
      * and that at the very least is not dropping or dupe'ing records.
      */
+    @Override
     public void testExecute(){
 
         // Create an input file via the related service
@@ -83,7 +68,7 @@ public class IcrEncumbranceSortStepTest extends KualiTestBase {
         }
 
         // Grab the lines of sorted file
-        String outputFilePath = kualiConfigurationService.getPropertyValueAsString("staging.directory") + "/gl/originEntry" + File.separator + GeneralLedgerConstants.BatchFileSystem.ICR_ENCUMBRANCE_POSTER_INPUT_FILE + GeneralLedgerConstants.BatchFileSystem.EXTENSION;
+        String outputFilePath = super.batchFileDirectoryName + File.separator + GeneralLedgerConstants.BatchFileSystem.ICR_ENCUMBRANCE_POSTER_INPUT_FILE + GeneralLedgerConstants.BatchFileSystem.EXTENSION;
         List<String> outputLines = null;
         try {
             outputLines = IOUtils.readLines(new FileReader(outputFilePath));

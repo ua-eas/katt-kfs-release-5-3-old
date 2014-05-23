@@ -48,13 +48,36 @@ public enum UniversityDateServiceFixture {
 
 
     /**
-     *
-     *
-     * @return a very basic UniversityDateService that returns values from the selected enum.
-     */
-    public UniversityDateService createUniversityDateService(){
-        UniversityDateService universityDateService = new TestingUniversityDateService(this.fiscalYear, this.fiscalPeriod, this.month, this.day);
-        return universityDateService;
+    *
+    *
+    * @return a very basic UniversityDateService that returns values from the selected enum.
+    */
+   public UniversityDateService createUniversityDateService(){
+       UniversityDateService universityDateService = new TestingUniversityDateService(this.fiscalYear, this.fiscalPeriod, this.month, this.day);
+       return universityDateService;
+   }
+
+
+    public int getFiscalYear() {
+        return fiscalYear;
+    }
+
+
+
+    public String getFiscalPeriod() {
+        return fiscalPeriod;
+    }
+
+
+
+    public int getMonth() {
+        return month;
+    }
+
+
+
+    public int getDay() {
+        return day;
     }
 
 
