@@ -237,11 +237,11 @@ public class CurrentAccountBalanceLookupableHelperServiceImpl extends AbstractGe
      */
     protected void updateCurrentBalance(CurrentAccountBalance currentBalance, Balance balance, String fiscalPeriod) {
         Collection<String> cashBudgetRecordLevelCodes = this.getParameterService().getParameterValuesAsString(CurrentAccountBalance.class, KFSParameterKeyConstants.GlParameterConstants.CASH_BUDGET_RECORD_LEVEL_PARM);
-        Collection<String> expenseObjectTypeCodes = this.getParameterService().getParameterValuesAsString(CurrentAccountBalance.class, KFSParameterKeyConstants.GlParameterConstants.EXPENSE_OBJECT_TYPE_CODE_PARAM);
+        Collection<String> expenseObjectTypeCodes = this.getParameterService().getParameterValuesAsString(CurrentAccountBalance.class, KFSParameterKeyConstants.GlParameterConstants.EXPENSE_OBJECT_TYPE_PARAM);
         Collection<String> fundBalanceObjCodes = this.getParameterService().getParameterValuesAsString(CurrentAccountBalance.class, KFSParameterKeyConstants.GlParameterConstants.FUND_BALANCE_OBJECT_CODE_PARAM);
         Collection<String> currentAssetObjCodes = this.getParameterService().getParameterValuesAsString(CurrentAccountBalance.class, KFSParameterKeyConstants.GlParameterConstants.CURRENT_ASSET_OBJECT_CODE_PARAM);
         Collection<String> currentLiabilityObjCodes = this.getParameterService().getParameterValuesAsString(CurrentAccountBalance.class, KFSParameterKeyConstants.GlParameterConstants.CURRENT_LIABILITY_OBJECT_CODE_PARAM);
-        Collection<String> incomeObjTypeCodes = this.getParameterService().getParameterValuesAsString(CurrentAccountBalance.class, KFSParameterKeyConstants.GlParameterConstants.INCOME_OBJECT_TYPE_CODE_PARAM);
+        Collection<String> incomeObjTypeCodes = this.getParameterService().getParameterValuesAsString(CurrentAccountBalance.class, KFSParameterKeyConstants.GlParameterConstants.INCOME_OBJECT_TYPE_PARAM);
         Collection<String> encumbranceBalTypes = this.getParameterService().getParameterValuesAsString(CurrentAccountBalance.class, KFSParameterKeyConstants.GlParameterConstants.ENCUMBRANCE_BALANCE_TYPE_PARAM);
         Collection<String> aSlIfBObjectTypes = Arrays.asList(new String[] { "AS", "LI", "FB" });
 
