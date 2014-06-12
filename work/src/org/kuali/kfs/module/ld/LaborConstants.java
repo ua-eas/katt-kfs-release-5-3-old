@@ -32,7 +32,7 @@ import org.kuali.rice.kns.service.DataDictionaryService;
 import org.kuali.rice.krad.datadictionary.AttributeDefinition;
 
 /**
- * Global constancts for labor distribution.
+ * Global constants for labor distribution.
  */
 public class LaborConstants {
     public static final String LABOR_NAMESPACE_CODE = "KFS-LD";
