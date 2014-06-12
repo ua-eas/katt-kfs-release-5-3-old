@@ -64,6 +64,7 @@ public class TrialBalanceServiceTest extends KualiTestBase {
         private BigDecimal expectedBalance;
 
 
+
         /*
          * Initial the enum for period and balance specific values. The fiscalYear
          * and fiscalCoaCode are common across records being tested.
@@ -102,6 +103,11 @@ public class TrialBalanceServiceTest extends KualiTestBase {
     private static final String DATA_FILE_PATH = "test/unit/src/org/kuali/kfs/gl/batch/fixture/gl_trllblnc.csv";
     private static final int COLUMN_COUNT = 25;
     private static final String DELETE_ALL_ENTRIES_SQL = "DELETE FROM GL_BALANCE_T";
+    private static final String DATE_FORMAT = "yy/mm/dd";
+    private static final String TIME_FORMAT = "HH:MM:SS";
+    private static final String TIMESTAMP_FORMAT = "DD/MM/YYYY HH12:MI:SS PM";
+
+
 
     // Note, the following is "newline'd" every five columns; also, beware of single quotes needed for varchar columns
     private static final String INSERT_SQL_FORMAT = "INSERT INTO GL_BALANCE_T ("
@@ -114,7 +120,7 @@ public class TrialBalanceServiceTest extends KualiTestBase {
             + "'%s', '%s', '%s', %s, %s, "
             + "%s, %s, %s, %s, %s, "
             + "%s, %s, %s, %s, %s, "
-            + "%s, %s, %s, %s, '%s')";
+            + "%s, %s, %s, %s, %s)";
 
     // Scale for BigDecimal instances
     private static final int SCALE = 2; // Changed easily if we need to do division/multiplication
@@ -152,16 +158,39 @@ public class TrialBalanceServiceTest extends KualiTestBase {
 
         for(String line : lines){
             String[] tokens = line.split(",", -1);
+
+            // Be DB agnostic with different timestamp functions
+            String timeStampString = tokens[24];
+            String timeStampSql = getTimestampSql(timeStampString);
+
             String sqlInsert = String.format(INSERT_SQL_FORMAT,
                     tokens[0], tokens[1], tokens[2], tokens[3], tokens[4],
                     tokens[5], tokens[6], tokens[7], tokens[8], tokens[9],
                     tokens[10], tokens[11], tokens[12], tokens[13], tokens[14],
                     tokens[15], tokens[16], tokens[17], tokens[18], tokens[19],
-                    tokens[20], tokens[21], tokens[22], tokens[23], tokens[24]);
+                    tokens[20], tokens[21], tokens[22], tokens[23], timeStampSql);
             insertStatements.add(sqlInsert);
         }
 
         return insertStatements;
+    }
+
+
+    /*
+     * Build DB platform specific "to_date" sql, e.g:
+     *
+     */
+    private String getTimestampSql(String timeStampString){
+
+        StringBuffer sb = new StringBuffer();
+        sb.append(unitTestSqlDao.getDbPlatform().getStrToDateFunction());
+        sb.append("('");
+        sb.append(timeStampString);
+        sb.append("', ");
+        sb.append(unitTestSqlDao.getDbPlatform().getDateFormatString(TIMESTAMP_FORMAT));
+        sb.append(")");
+
+        return sb.toString();
     }
 
 
