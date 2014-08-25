@@ -50,8 +50,7 @@ public class IcrEncumbranceServiceImpl implements IcrEncumbranceService {
     public File buildIcrEncumbranceFeed() {
         File encumbranceFeedFile = null;
 
-        //Integer currentFiscalYear = universityDateService.getCurrentFiscalYear();
-        Integer currentFiscalYear = 2009;
+        Integer currentFiscalYear = universityDateService.getCurrentFiscalYear();
         String currentFiscalPeriod = universityDateService.getCurrentUniversityDate().getUniversityFiscalAccountingPeriod();
 
         //Get Expense Object Types and Cost Share Sub-Account Type

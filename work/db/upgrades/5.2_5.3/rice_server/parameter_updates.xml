@@ -327,6 +327,6 @@
 			<column name="CMPNT_CD" value="Batch" />
 			<where>nmspc_cd = 'KFS-GL' and cmpnt_cd = 'PosterIndirectCostRecoveryEntriesStep' and parm_nm = 'INDIRECT_COST_TYPES' and appl_id = 'KFS'</where>
 		</update>		
-  </changeSet>
+	</changeSet>
     
 </databaseChangeLog>
